@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// --- 1. إعداد سيرفر الويب (Express Web Server) لـ Render ---
+// --- 1. سيرفر Express لمنصة Render ---
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -37,7 +37,7 @@ const client = new Client({
 const PREFIX = "!";
 
 client.once('ready', () => {
-    console.log(`✅ تم تسجيل الدخول للبوت: ${client.user.tag}`);
+    console.log(`✅ تم تسجيل الدخول بنجاح باسم: ${client.user.tag}`);
 });
 
 client.on('messageCreate', async (message) => {
@@ -50,35 +50,38 @@ client.on('messageCreate', async (message) => {
         const member = message.member;
         const user = message.author;
 
-        // حساب عدد الأيام
+        // حساب الأيام
         const accountCreatedDays = Math.floor((Date.now() - user.createdTimestamp) / (1000 * 60 * 60 * 24));
         const joinedServerDays = Math.floor((Date.now() - member.joinedTimestamp) / (1000 * 60 * 60 * 24));
 
         const createdUnix = Math.floor(user.createdTimestamp / 1000);
         const joinedUnix = Math.floor(member.joinedTimestamp / 1000);
 
+        // صياغة النصوص للتاريخ
+        const createdValue = "<t:" + createdUnix + ":F>\n🔻 <t:" + createdUnix + ":R> (قبل " + accountCreatedDays + " يوم)";
+        const joinedValue = "<t:" + joinedUnix + ":F>\n🔻 <t:" + joinedUnix + ":R> (قبل " + joinedServerDays + " يوم)";
+
         const embed = new EmbedBuilder()
             .setColor('#5865F2')
-            .setTitle(`👤 معلومات الحساب — ${user.username}`)
+            .setTitle('👤 معلومات الحساب — ' + user.username)
             .setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }))
             .addFields(
                 { 
                     name: '🗓️ تاريخ إنشاء الحساب:', 
-                    value: <t:${createdUnix}:F>\n🔻 <t:${createdUnix}:R> (قبل **${accountCreatedDays}** يوم), 
+                    value: createdValue, 
                     inline: false 
                 },
                 { 
                     name: '📥 تاريخ دخول السيرفر:', 
-                    value: <t:${joinedUnix}:F>\n🔻 <t:${joinedUnix}:R> (قبل **${joinedServerDays}** يوم), 
+                    value: joinedValue, 
                     inline: false 
                 }
             )
-            .setFooter({ text: طلب بواسطة: ${user.tag}, iconURL: user.displayAvatarURL() })
+            .setFooter({ text: 'طلب بواسطة: ' + user.tag, iconURL: user.displayAvatarURL() })
             .setTimestamp();
 
         await message.channel.send({ embeds: [embed] });
     }
 });
 
-// تسجيل الدخول بالتوكن
 client.login(process.env.TOKEN);
