@@ -1,6 +1,30 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+const express = require('express');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
+// --- 1. إعداد سيرفر الويب (Express Web Server) لـ Render ---
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+    res.send('🤖 البوت يعمل بنجاح وسيرفر الويب متصل!');
+});
+
+app.listen(PORT, () => {
+    console.log(`🌐 تم تشغيل سيرفر الويب على المنفذ: ${PORT}`);
+});
+
+// --- 2. الاتصال بـ MongoDB ---
+if (process.env.MONGO_URI) {
+    mongoose.connect(process.env.MONGO_URI)
+        .then(() => console.log('🍃 تم الاتصال بنجاح بـ MongoDB'))
+        .catch((err) => console.error('❌ خطأ في الاتصال بـ MongoDB:', err));
+} else {
+    console.log('⚠️ لم يتم إضافة MONGO_URI في متغيرات البيئة.');
+}
+
+// --- 3. إعداد بوت الديسكورد ---
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -13,7 +37,7 @@ const client = new Client({
 const PREFIX = "!";
 
 client.once('ready', () => {
-    console.log(`✅ تم تشغيل البوت بنجاح باسم: ${client.user.tag}`);
+    console.log(`✅ تم تسجيل الدخول للبوت: ${client.user.tag}`);
 });
 
 client.on('messageCreate', async (message) => {
@@ -26,6 +50,7 @@ client.on('messageCreate', async (message) => {
         const member = message.member;
         const user = message.author;
 
+        // حساب عدد الأيام
         const accountCreatedDays = Math.floor((Date.now() - user.createdTimestamp) / (1000 * 60 * 60 * 24));
         const joinedServerDays = Math.floor((Date.now() - member.joinedTimestamp) / (1000 * 60 * 60 * 24));
 
@@ -55,4 +80,5 @@ client.on('messageCreate', async (message) => {
     }
 });
 
+// تسجيل الدخول بالتوكن
 client.login(process.env.TOKEN);
