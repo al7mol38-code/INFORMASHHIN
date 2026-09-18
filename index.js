@@ -1,7 +1,7 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 require('dotenv').config();
 
-// --- إعداد بوت الديسكورد (بدون MongoDB) ---
+// --- إعداد بوت الديسكورد ---
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -12,14 +12,20 @@ const client = new Client({
 });
 
 const PREFIX = "!";
+// أيدي الروم المسموح له بالرد فيه
+const ALLOWED_CHANNEL_ID = "1533721177049272513";
 
 client.once('ready', () => {
     console.log(`✅ تم تسجيل الدخول بنجاح باسم: ${client.user.tag}`);
-    console.log('🚀 البوت يعمل الآن كـ Background Worker بدون سيرفر ويب وبدون MongoDB.');
+    console.log('🚀 البوت يعمل الآن كـ Background Worker ومحدد بروم معين فقط.');
 });
 
 client.on('messageCreate', async (message) => {
+    // تجاهل رسائل البوتات أو الرسائل التي لا تبدأ بالبادئة
     if (message.author.bot || !message.content.startsWith(PREFIX)) return;
+
+    // شرط التحقق من الروم (إذا لم يكن الروم هو نفسه المحدد، يتم تجاهل الرسالة تماماً)
+    if (message.channel.id !== ALLOWED_CHANNEL_ID) return;
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
@@ -46,7 +52,6 @@ client.on('messageCreate', async (message) => {
         const embed = new EmbedBuilder()
             .setColor('#5865F2')
             .setTitle('👤 معلومات الحساب')
-            // وضع اسم المستخدم مع المنشن الخاص به وصورة بروفايله في رأس الـ Embed
             .setAuthor({ 
                 name: user.tag + ' (' + user.toString() + ')', 
                 iconURL: user.displayAvatarURL({ dynamic: true }) 
