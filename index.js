@@ -11,9 +11,8 @@ const client = new Client({
     ]
 });
 
-const PREFIX = "!";
-// أيدي الروم المسموح له بالرد فيه
-const ALLOWED_CHANNEL_ID = "1533721177049272513";
+const PREFIX = "="; // تم تغيير البادئة إلى علامة يساوي
+const ALLOWED_CHANNEL_ID = "1533721177049272513"; // أيدي الروم المسموح به
 
 client.once('ready', () => {
     console.log(`✅ تم تسجيل الدخول بنجاح باسم: ${client.user.tag}`);
@@ -21,10 +20,10 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', async (message) => {
-    // تجاهل رسائل البوتات أو الرسائل التي لا تبدأ بالبادئة
+    // تجاهل رسائل البوتات أو الرسائل التي لا تبدأ بـ =
     if (message.author.bot || !message.content.startsWith(PREFIX)) return;
 
-    // شرط التحقق من الروم (إذا لم يكن الروم هو نفسه المحدد، يتم تجاهل الرسالة تماماً)
+    // شرط التحقق من الروم
     if (message.channel.id !== ALLOWED_CHANNEL_ID) return;
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
