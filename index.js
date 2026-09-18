@@ -1,17 +1,7 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
-const mongoose = require('mongoose');
 require('dotenv').config();
 
-// --- 1. الاتصال بـ MongoDB ---
-if (process.env.MONGO_URI) {
-    mongoose.connect(process.env.MONGO_URI)
-        .then(() => console.log('🍃 تم الاتصال بنجاح بـ MongoDB'))
-        .catch((err) => console.error('❌ خطأ في الاتصال بـ MongoDB:', err));
-} else {
-    console.log('⚠️ لم يتم إضافة MONGO_URI في متغيرات البيئة.');
-}
-
-// --- 2. إعداد بوت الديسكورد ---
+// --- إعداد بوت الديسكورد (بدون MongoDB) ---
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -25,7 +15,7 @@ const PREFIX = "!";
 
 client.once('ready', () => {
     console.log(`✅ تم تسجيل الدخول بنجاح باسم: ${client.user.tag}`);
-    console.log('🚀 البوت يعمل الآن كـ Background Worker بدون الحاجة لسيرفر ويب.');
+    console.log('🚀 البوت يعمل الآن كـ Background Worker بدون سيرفر ويب وبدون MongoDB.');
 });
 
 client.on('messageCreate', async (message) => {
@@ -49,15 +39,14 @@ client.on('messageCreate', async (message) => {
         const createdValue = "<t:" + createdUnix + ":F>\n🔻 <t:" + createdUnix + ":R> (قبل " + accountCreatedDays + " يوم)";
         const joinedValue = "<t:" + joinedUnix + ":F>\n🔻 <t:" + joinedUnix + ":R> (قبل " + joinedServerDays + " يوم)";
 
-        // الوقت الحالي لعرضه بشكل دقيق (اختياري إضافي)
+        // الوقت الحالي لطلب الأمر
         const nowUnix = Math.floor(Date.now() / 1000);
         const timeValue = "📅 التاريخ والوقت: <t:" + nowUnix + ":F>\n⏳ (منذ <t:" + nowUnix + ":R>)";
 
         const embed = new EmbedBuilder()
             .setColor('#5865F2')
-            // تم استخدام المنشن هنا مباشرة في العنوان أو يمكن جعله نصاً
-            .setTitle('👤 معلومات الحساب الخاصة بـ ' + user.tag)
-            // إضافة صورة بروفايل من كتب الأمر كـ Author أو Thumbnail
+            .setTitle('👤 معلومات الحساب')
+            // وضع اسم المستخدم مع المنشن الخاص به وصورة بروفايله في رأس الـ Embed
             .setAuthor({ 
                 name: user.tag + ' (' + user.toString() + ')', 
                 iconURL: user.displayAvatarURL({ dynamic: true }) 
