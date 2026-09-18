@@ -1,21 +1,8 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
-const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// --- 1. سيرفر Express لمنصة Render ---
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.get('/', (req, res) => {
-    res.send('🤖 البوت يعمل بنجاح وسيرفر الويب متصل!');
-});
-
-app.listen(PORT, () => {
-    console.log(`🌐 تم تشغيل سيرفر الويب على المنفذ: ${PORT}`);
-});
-
-// --- 2. الاتصال بـ MongoDB ---
+// --- 1. الاتصال بـ MongoDB ---
 if (process.env.MONGO_URI) {
     mongoose.connect(process.env.MONGO_URI)
         .then(() => console.log('🍃 تم الاتصال بنجاح بـ MongoDB'))
@@ -24,7 +11,7 @@ if (process.env.MONGO_URI) {
     console.log('⚠️ لم يتم إضافة MONGO_URI في متغيرات البيئة.');
 }
 
-// --- 3. إعداد بوت الديسكورد ---
+// --- 2. إعداد بوت الديسكورد ---
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -38,6 +25,7 @@ const PREFIX = "!";
 
 client.once('ready', () => {
     console.log(`✅ تم تسجيل الدخول بنجاح باسم: ${client.user.tag}`);
+    console.log('🚀 البوت يعمل الآن كـ Background Worker بدون الحاجة لسيرفر ويب.');
 });
 
 client.on('messageCreate', async (message) => {
@@ -61,9 +49,19 @@ client.on('messageCreate', async (message) => {
         const createdValue = "<t:" + createdUnix + ":F>\n🔻 <t:" + createdUnix + ":R> (قبل " + accountCreatedDays + " يوم)";
         const joinedValue = "<t:" + joinedUnix + ":F>\n🔻 <t:" + joinedUnix + ":R> (قبل " + joinedServerDays + " يوم)";
 
+        // الوقت الحالي لعرضه بشكل دقيق (اختياري إضافي)
+        const nowUnix = Math.floor(Date.now() / 1000);
+        const timeValue = "📅 التاريخ والوقت: <t:" + nowUnix + ":F>\n⏳ (منذ <t:" + nowUnix + ":R>)";
+
         const embed = new EmbedBuilder()
             .setColor('#5865F2')
-            .setTitle('👤 معلومات الحساب — ' + user.username)
+            // تم استخدام المنشن هنا مباشرة في العنوان أو يمكن جعله نصاً
+            .setTitle('👤 معلومات الحساب الخاصة بـ ' + user.tag)
+            // إضافة صورة بروفايل من كتب الأمر كـ Author أو Thumbnail
+            .setAuthor({ 
+                name: user.tag + ' (' + user.toString() + ')', 
+                iconURL: user.displayAvatarURL({ dynamic: true }) 
+            })
             .setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }))
             .addFields(
                 { 
@@ -74,6 +72,11 @@ client.on('messageCreate', async (message) => {
                 { 
                     name: '📥 تاريخ دخول السيرفر:', 
                     value: joinedValue, 
+                    inline: false 
+                },
+                { 
+                    name: '⏰ وقت طلب الأمر:', 
+                    value: timeValue, 
                     inline: false 
                 }
             )
